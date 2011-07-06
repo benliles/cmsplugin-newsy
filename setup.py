@@ -10,8 +10,8 @@ setup(
     name = 'cmsplugin-newsy',
     version = version,
     description = "Django CMS Plugin for News",
-    long_description = open(join(dirname(__file__), 'README')).read() + "\n" + 
-                       open(join(dirname(__file__), 'HISTORY')).read(),
+    long_description = open(join(dirname(__file__), 'README.rst')).read() + "\n" + 
+                       open(join(dirname(__file__), 'HISTORY.rst')).read(),
     classifiers = [
         "Framework :: Django",
         "Development Status :: 3 - Alpha",
