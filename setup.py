@@ -31,5 +31,6 @@ setup(
     install_requires = [
         'setuptools',
         'django-photologue>=2.3',
-        'django-cms>=2.1.0',],
+        'django-cms>=2.1.0',
+        'django-tagging>=0.3.1']
 )
