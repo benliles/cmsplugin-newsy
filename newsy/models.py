@@ -36,6 +36,9 @@ class NewsItem(models.Model):
         get_latest_by = 'publication_date'
         ordering = ['-publication_date']
     
+    def __unicode__(self):
+        return self.title
+    
     def get_template(self):
         """
         get the template of this page if defined or if closer parent if
@@ -64,5 +67,59 @@ class NewsItem(models.Model):
                 placeholder = Placeholder.objects.create(slot=placeholder_name)
                 self.placeholders.add(placeholder)
                 found[placeholder_name] = placeholder
+    
+    def has_change_permission(self, request):
+        opts = self._meta
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm(opts.app_label + '.' + opts.get_change_permission()) and \
+            self.has_generic_permission(request, "change")
+    
+    def has_delete_permission(self, request):
+        opts = self._meta
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm(opts.app_label + '.' + opts.get_delete_permission()) and \
+            self.has_generic_permission(request, "delete")
+    
+    def has_publish_permission(self, request):
+        return self.has_generic_permission(request, "publish")
+    
+    def has_advanced_settings_permission(self, request):
+        return self.has_generic_permission(request, "advanced_settings")
+    
+    def has_change_permissions_permission(self, request):
+        """Has user ability to change permissions for current page?
+        """
+        return self.has_generic_permission(request, "change_permissions")
+    
+    def has_add_permission(self, request):
+        """Has user ability to add page under current page?
+        """
+        return self.has_generic_permission(request, "add")
+    
+    def has_moderate_permission(self, request):
+        """Has user ability to moderate current page? If moderation isn't 
+        installed, nobody can moderate.
+        """
+        if not settings.CMS_MODERATOR:
+            return False
+        return self.has_generic_permission(request, "moderate")
+    
+    def has_generic_permission(self, request, perm_type):
+        """
+        Return true if the current user has permission on the page.
+        Return the string 'All' if the user has all rights.
+        """
+        att_name = "permission_%s_cache" % perm_type
+        if not hasattr(self, "permission_user_cache") or not hasattr(self, att_name) \
+            or request.user.pk != self.permission_user_cache.pk:
+            from cms.utils.permissions import has_generic_permission
+            self.permission_user_cache = request.user
+            setattr(self, att_name, has_generic_permission(self.id, request.user, perm_type, self.site_id))
+            if getattr(self, att_name):
+                self.permission_edit_cache = True
+                
+        return getattr(self, att_name)
 
 tagging.register(NewsItem)
