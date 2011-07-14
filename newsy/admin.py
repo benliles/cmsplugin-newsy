@@ -16,12 +16,12 @@ from cms.admin.dialog.views import get_copy_dialog
 from cms.forms.widgets import PluginEditor
 from cms.models import Placeholder, CMSPlugin
 from cms.plugin_pool import plugin_pool
-from cms.utils import get_template_from_request, get_language_from_request
+from cms.utils import get_language_from_request
 from cms.utils.helpers import make_revision_with_plugins
 from cms.utils.plugins import get_placeholders
 
 from newsy.forms import NewsItemAddForm, NewsItemForm
-from newsy.models import NewsItem
+from newsy.models import NewsItem, NewsItemThumbnail
 
 if 'reversion' in settings.INSTALLED_APPS:
     import reversion
@@ -33,6 +33,25 @@ else:
 
 
 
+def get_template_from_request(request, obj=None, no_current_page=False):
+    """
+    Gets a valid template from different sources or falls back to the default
+    template.
+    """
+    template = None
+    if len(settings.NEWSY_TEMPLATES) == 1:
+        return settings.NEWSY_TEMPLATES[0][0]
+    if "template" in request.REQUEST:
+        template = request.REQUEST['template']
+    if not template and obj is not None:
+        template = obj.get_template()
+    if not template and not no_current_page and hasattr(request, "current_page"):
+        current_page = request.current_page
+        if hasattr(current_page, "get_template"):
+            template = current_page.get_template()
+    if template is not None and template in dict(settings.NEWSY_TEMPLATES).keys():
+        return template    
+    return settings.NEWSY_TEMPLATES[0][0]
 
 def get_item_from_placeholder_if_exists(placeholder):
     try:
@@ -63,9 +82,17 @@ def make_revision_with_plugins(obj, user=None, message=None):
                     revision_manager.add(plugin_instance)
                 revision_manager.add(plugin)
 
+class NewsItemThumbnailAdmin(admin.TabularInline):
+    model = NewsItemThumbnail
+    extra=1
+    max_num=1
+    verbose_name=_('thumbnail')
+
 class NewsItemAdmin(ModelAdmin):
     form = NewsItemForm
+    inlines = [NewsItemThumbnailAdmin]
     date_hierarchy = 'publication_date'
+    list_display = ['title', 'published', 'publication_date',]
     list_filter = ['published', 'template', ]
     search_fields = ('title', 'slug', 'short_title', 'page_title', 'description',)
     revision_form_template = "admin/newsy/newsitem/revision_form.html"
@@ -85,7 +112,7 @@ class NewsItemAdmin(ModelAdmin):
 
     fieldsets = [
         (None, {
-            'fields': ['title', 'description', 'sites', 'published'],
+            'fields': ['title', 'description', 'sites', 'published',],
             'classes': ('general',),
         }),
         (_('Basic Settings'), {
@@ -157,7 +184,7 @@ class NewsItemAdmin(ModelAdmin):
         page = get_object_or_404(NewsItem, pk=object_id)
         if page.has_change_permission(request):
             to_template = request.POST.get("template", None)
-            if to_template in dict(settings.CMS_TEMPLATES):
+            if to_template in dict(settings.NEWSY_TEMPLATES):
                 page.template = to_template
                 page.save()
                 if "reversion" in settings.INSTALLED_APPS:

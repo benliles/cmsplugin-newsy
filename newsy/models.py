@@ -12,6 +12,12 @@ import tagging
 
 
 class NewsItemThumbnail(ImageModel):
+    news_item = models.OneToOneField('NewsItem',related_name='thumbnail',
+                                  on_delete=models.CASCADE)
+    
+    def __unicode__(self):
+        return u'%s thumbnail' % (self.news_item.title,)
+    
     class Meta:
         db_table = 'newsy_newsitem_thumbnail'
 
@@ -24,13 +30,14 @@ class NewsItem(models.Model):
                                   'html page title override'))
     template_choices = [(x, _(y)) for x,y in settings.NEWSY_TEMPLATES]
     template = models.CharField(_("template"), max_length=255, choices=template_choices, help_text=_('The template used to render the content.'))
-    slug = models.SlugField(_("slug"), max_length=255, db_index=True,
-                            unique_for_date='published')
+    slug = models.SlugField(_("slug"), max_length=255, db_index=True)
     description = models.TextField(_('description'), blank=True, null=True, help_text=_('A short description of the news item'))
     publication_date = models.DateTimeField(_('publication date'), blank=True, null=True, db_index=True, help_text=_('Publication date and time of the news item'))
-    published = models.BooleanField(_('published'), default=False)
+    published = models.BooleanField(_('published'), default=False, db_index=True)
     sites = models.ManyToManyField(Site)
     placeholders = models.ManyToManyField(Placeholder, editable=False)
+    
+    moderator_state = 0
     
     class Meta:
         get_latest_by = 'publication_date'
@@ -38,6 +45,28 @@ class NewsItem(models.Model):
     
     def __unicode__(self):
         return self.title
+    
+    @models.permalink
+    def get_absolute_url(self, *args, **kwargs):
+        if self.published:
+            return ('published-item-view',(),{'year':self.publication_date.year,
+                                              'month': self.publication_date.month,
+                                              'day': self.publication_date.day,
+                                              'slug': self.slug})
+        return ('unpublished-item-view', (), {'slug': self.slug})
+    
+    def get_page_title(self, language=None, fallback=True, version_id=None, force_reload=False):
+        if self.page_title:
+            return self.page_title
+        return self.title
+    
+    def get_short_title(self):
+        if self.short_title:
+            return self.short_title
+        return self.title
+    
+    def get_cached_ancestors(self, ascending=True):
+        return []
     
     def get_template(self):
         """
@@ -106,6 +135,12 @@ class NewsItem(models.Model):
             return False
         return self.has_generic_permission(request, "moderate")
     
+    def has_move_page_permission(self, request):
+        return False
+    
+    def get_moderator_queryset(self):
+        return NewsItem.objects.all()
+    
     def has_generic_permission(self, request, perm_type):
         """
         Return true if the current user has permission on the page.
@@ -116,7 +151,8 @@ class NewsItem(models.Model):
             or request.user.pk != self.permission_user_cache.pk:
             from cms.utils.permissions import has_generic_permission
             self.permission_user_cache = request.user
-            setattr(self, att_name, has_generic_permission(self.id, request.user, perm_type, self.site_id))
+            setattr(self, att_name, True)
+            #setattr(self, att_name, has_generic_permission(self.id, request.user, perm_type, self.site_id))
             if getattr(self, att_name):
                 self.permission_edit_cache = True
                 
