@@ -1,6 +1,9 @@
+from datetime import date, timedelta
+
 from django.http import Http404, HttpResponseServerError
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+from django.views.generic.list import ListView
 
 from cms.utils import get_language_from_request
 
@@ -40,3 +43,13 @@ def unpublished_item_view(request, slug):
     context['current_page'] = page
     context['has_change_permissions'] = page.has_change_permission(request)
     return render_to_response(page.template, context)
+
+def archive_view(request, year, month=None, day=None, **kwargs):
+    qs = NewsItem.objects.filter(published=True, publication_date__year=year)
+    
+    if day:
+        qs = qs.filter(publication_date__day=day)
+    if month:
+        qs = qs.filter(publication_date__month=month)
+    
+    return ListView.as_view(queryset=qs, **kwargs)(request)
