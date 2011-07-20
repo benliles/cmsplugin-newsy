@@ -112,7 +112,7 @@ class NewsItemAdmin(ModelAdmin):
 
     fieldsets = [
         (None, {
-            'fields': ['title', 'description', 'sites', 'published',],
+            'fields': ['title', 'description', 'sites', 'published','tags',],
             'classes': ('general',),
         }),
         (_('Basic Settings'), {

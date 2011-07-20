@@ -8,6 +8,7 @@ from cms.models import Placeholder, Page
 from photologue.models import ImageModel
 
 import tagging
+from tagging.fields import TagField
 
 
 
@@ -36,6 +37,7 @@ class NewsItem(models.Model):
     published = models.BooleanField(_('published'), default=False, db_index=True)
     sites = models.ManyToManyField(Site)
     placeholders = models.ManyToManyField(Placeholder, editable=False)
+    tags = TagField()
     
     moderator_state = 0
     
@@ -158,4 +160,4 @@ class NewsItem(models.Model):
                 
         return getattr(self, att_name)
 
-tagging.register(NewsItem)
+#tagging.register(NewsItem, tag_descriptor_attr='tags')
