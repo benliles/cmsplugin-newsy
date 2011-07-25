@@ -314,7 +314,7 @@ class NewsItemAdmin(ModelAdmin):
         """
         try:
             obj = self.model.objects.get(pk=object_id)
-        except self.model.DoesNotExist:
+        except (self.model.DoesNotExist, ValueError,):
             # Don't raise Http404 just yet, because we haven't checked
             # permissions yet. We don't want an unauthenticated user to be able
             # to determine whether a given object exists.
