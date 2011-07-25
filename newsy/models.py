@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.contrib.sites.managers import CurrentSiteManager
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -41,9 +42,12 @@ class NewsItem(models.Model):
     
     moderator_state = 0
     
+    objects = models.Manager()
+    site_objects = CurrentSiteManager('sites')
+    
     class Meta:
         get_latest_by = 'publication_date'
-        ordering = ['-publication_date']
+        ordering = ['-publication_date','title']
     
     def __unicode__(self):
         return self.title
