@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from urllib import unquote
 
 from django.contrib.auth.decorators import permission_required
 from django.http import Http404, HttpResponseServerError
@@ -8,25 +9,44 @@ from django.views.generic.list import ListView
 
 from cms.utils import get_language_from_request
 
+from tagging.models import TaggedItem
+
 from newsy.models import NewsItem
 
 
 
-def item_list(request, **kwargs):
-    kwargs.setdefault('paginate_by', 25)
-    kwargs.setdefault('filters', {})
-    filters = kwargs.pop('filters')
-    filters.setdefault('published', True)
+class NewsListView(ListView):
+    queryset = NewsItem.site_objects
+    published = True
     
-    return ListView.as_view(queryset=NewsItem.site_objects.filter(**filters),
-                            **kwargs)(request)
+    def get_queryset(self):
+        qs = super(NewsListView, self).get_queryset()
+        
+        tags = getattr(self, 'tags', [])
+        kwargs = getattr(self, 'kwargs', {})
+        if 'tag' in kwargs:
+            print 'tag: %s' % (kwargs['tag'])
+            tags.append(unquote(kwargs['tag']))
+        
+        if getattr(self, 'published', True):
+            qs = qs.filter(published=True)
+        else:
+            qs = qs.filter(published=False)
+        
+        if tags:
+            qs = TaggedItem.objects.get_by_model(qs, tags)
+        
+        if kwargs.get('year', None):
+            qs = qs.filter(publication_date__year=kwargs['year'])
+        if kwargs.get('month', None):
+            qs = qs.filter(publication_date__month=kwargs['month'])
+        if kwargs.get('day', None):
+            qs = qs.filter(publication_date__day=kwargs['day'])
+        
+        return qs
 
-@permission_required('newsy.change_newsitem')
-def upcoming_item_list(request, **kwargs):
-    kwargs.setdefault('filters', {})
-    kwargs['filters'].setdefault('published', False)
-    return item_list(request, **kwargs)
-
+item_list = NewsListView.as_view()
+upcoming_item_list = permission_required('newsy.change_newsitem')(NewsListView.as_view(published=False))
 
 def item_view(request, year, month, day, slug):
     try:
