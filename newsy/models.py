@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.contrib.sites.managers import CurrentSiteManager
@@ -10,6 +12,7 @@ from photologue.models import ImageModel
 
 import tagging
 from tagging.fields import TagField
+from tagging.models import TaggedItem
 
 
 
@@ -70,6 +73,18 @@ class NewsItem(models.Model):
         if self.short_title:
             return self.short_title
         return self.title
+    
+    def get_publication_month(self):
+        if self.publication_date:
+            return date(self.publication_date.year,
+                        self.publication_date.month, 1)
+        else:
+            return date.today().replace(day=1)
+    
+    def get_related(self, max=5):
+        return TaggedItem.objects.get_related(self,
+                   NewsItem.site_objects.filter(published=True),
+                   num=max)
     
     def get_cached_ancestors(self, ascending=True):
         return []

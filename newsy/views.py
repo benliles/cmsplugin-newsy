@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from urllib import unquote
 
 from django.contrib.auth.decorators import permission_required
 from django.http import Http404, HttpResponseServerError
@@ -19,35 +18,55 @@ class NewsListView(ListView):
     queryset = NewsItem.site_objects
     published = True
     
-    def get_queryset(self):
-        qs = super(NewsListView, self).get_queryset()
-        
+    def get_tags(self):
         tags = getattr(self, 'tags', [])
         kwargs = getattr(self, 'kwargs', {})
         if 'tag' in kwargs:
-            print 'tag: %s' % (kwargs['tag'])
-            tags.append(unquote(kwargs['tag']))
+            tags.append(kwargs['tag'])
+        
+        return tags
+    
+    def get_date_filters(self):
+        filters = {}
+        kwargs = getattr(self, 'kwargs', {})
+        if kwargs.get('year', None):
+            filters['publication_date__year'] = kwargs['year']
+        if kwargs.get('month', None):
+            filters['publication_date__month'] = kwargs['month']
+        if kwargs.get('day', None):
+            filters['publication_date__day'] = kwargs['day']
+        return filters
+    
+    def get_queryset(self):
+        qs = super(NewsListView, self).get_queryset()
+        kwargs = getattr(self, 'kwargs', {})
         
         if getattr(self, 'published', True):
             qs = qs.filter(published=True)
         else:
             qs = qs.filter(published=False)
         
+        tags = self.get_tags()
+        date_filters = self.get_date_filters()
+        
         if tags:
             qs = TaggedItem.objects.get_by_model(qs, tags)
         
-        if kwargs.get('year', None):
-            qs = qs.filter(publication_date__year=kwargs['year'])
-        if kwargs.get('month', None):
-            qs = qs.filter(publication_date__month=kwargs['month'])
-        if kwargs.get('day', None):
-            qs = qs.filter(publication_date__day=kwargs['day'])
+        if date_filters:
+            qs = qs.filter(**date_filters)
         
         return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super(NewsListView, self).get_context_data(**kwargs)
+        tags = self.get_tags()
+        if tags:
+            context['news_tags'] = tags
+        return context
 
-item_list = NewsListView.as_view(paginate_by=30)
+item_list = NewsListView.as_view(paginate_by=15)
 upcoming_item_list = permission_required('newsy.change_newsitem')(
-    NewsListView.as_view(published=False, paginate_by=30))
+    NewsListView.as_view(published=False, paginate_by=15))
 
 def item_view(request, year, month, day, slug):
     try:
