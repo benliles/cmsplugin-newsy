@@ -45,8 +45,9 @@ class NewsListView(ListView):
         
         return qs
 
-item_list = NewsListView.as_view()
-upcoming_item_list = permission_required('newsy.change_newsitem')(NewsListView.as_view(published=False))
+item_list = NewsListView.as_view(paginate_by=30)
+upcoming_item_list = permission_required('newsy.change_newsitem')(
+    NewsListView.as_view(published=False, paginate_by=30))
 
 def item_view(request, year, month, day, slug):
     try:
