@@ -14,5 +14,5 @@ urlpatterns = patterns('newsy.views',
     url(r'^upcoming/$', 'upcoming_item_list', name='upcoming-newsy-items'),
     url(r'^upcoming/(?P<slug>[\-\d\w]+)/$','unpublished_item_view',
         name='unpublished-item-view'),
-    url(r'^tag/(?P<tag>[\d\w ]{1,64})/$', 'item_list', name='tag-view')
+    url(r'^tag/(?P<tag>[\d\w &]{1,64})/$', 'item_list', name='tag-view')
 )
