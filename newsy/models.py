@@ -86,6 +86,30 @@ class NewsItem(models.Model):
                    NewsItem.site_objects.filter(published=True),
                    num=max)
     
+    def get_next_published(self):
+        if not self.publication_date or not self.published:
+            return None
+        
+        try:
+            return NewsItem.site_objects.filter(
+                published=True,
+                publication_date__gt=self.publication_date).order_by(
+                    'publication_date')[0]
+        except:
+            return None
+    
+    def get_previous_published(self):
+        if not self.publication_date or not self.published:
+            return None
+        
+        try:
+            return NewsItem.site_objects.filter(
+                published=True,
+                publication_date__lt=self.publication_date).order_by(
+                    '-publication_date')[0]
+        except:
+            return None
+    
     def get_cached_ancestors(self, ascending=True):
         return []
     
