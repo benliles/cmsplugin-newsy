@@ -112,7 +112,8 @@ class NewsItemAdmin(ModelAdmin):
 
     fieldsets = [
         (None, {
-            'fields': ['title', 'description', 'sites', 'published','tags',],
+            'fields': ['title', 'short_title', 'page_title', 'description',
+                       'sites', 'published', 'tags'],
             'classes': ('general',),
         }),
         (_('Basic Settings'), {
@@ -121,7 +122,7 @@ class NewsItemAdmin(ModelAdmin):
             'description': _('Note: This page reloads if you change the selection. Save it first.'),
         }),
         (_('Advanced Settings'), {
-            'fields': ['short_title', 'page_title', 'slug', 'publication_date'],
+            'fields': ['slug', 'publication_date'],
             'classes': ('collapse',),
         }),
     ]
