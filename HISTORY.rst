@@ -1,3 +1,18 @@
+0.3 (2011/10/12)
+----------------
+
+* Switched to using the class based generic list view properly
+* Added tag browsing support
+* Added default pagination on list views of 30 (when using shortcut views)
+* Added some new methods to the NewsItem model to make a few things easier
+* Method for getting tag and date filters in generic view
+* Added ampersands to allowed tag characters (urls.py)
+* Reorganized form fields and increased the size of the title fields and tag field
+* News item slugs must be lowercase
+* Added the 0003 data migration to lowercase existing slugs
+* Added get_next_published and get_previous_published methods to news item
+* Added RSS feed for all published and for all tags (one feed per tag)
+
 0.2 (2011/07/25)
 ----------------
 
