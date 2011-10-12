@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.defaults import url, patterns
 
 from newsy.models import NewsItem
+from newsy.feeds import RssNewsItemFeed
 
 
 
@@ -14,5 +15,8 @@ urlpatterns = patterns('newsy.views',
     url(r'^upcoming/$', 'upcoming_item_list', name='upcoming-newsy-items'),
     url(r'^upcoming/(?P<slug>[\-\d\w]+)/$','unpublished_item_view',
         name='unpublished-item-view'),
-    url(r'^tag/(?P<tag>[\d\w &]{1,64})/$', 'item_list', name='tag-view')
+    url(r'^tag/(?P<tag>[\d\w &]{1,64})/$', 'item_list', name='tag-view'),
+    url(r'^rss/', RssNewsItemFeed(), name='newsy-rss-feed'),
+    url(r'^tag/(?P<tag>[\d\w &]{1,64})/rss/$', RssNewsItemFeed(),
+        name='newsy-rss-tag-feed'),
 )
