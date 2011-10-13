@@ -6,13 +6,12 @@ from django.contrib.sites.managers import CurrentSiteManager
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from cms.models import Placeholder, Page
+from cms.models import Placeholder, Page, CMSPlugin
 
 from photologue.models import ImageModel
 
-import tagging
 from tagging.fields import TagField
-from tagging.models import TaggedItem
+from tagging.models import TaggedItem, Tag
 
 
 
@@ -203,4 +202,33 @@ class NewsItem(models.Model):
                 
         return getattr(self, att_name)
 
-#tagging.register(NewsItem, tag_descriptor_attr='tags')
+class LatestNewsPlugin(CMSPlugin):
+    limit = models.PositiveSmallIntegerField(default=0)
+    tags = TagField()
+    
+    def __unicode__(self):
+        if self.tags:
+            return 'Latest news for: %s' % (str(self.tags),)
+        
+        return 'Latest news'
+    
+    def items(self):
+        qs = NewsItem.site_objects.filter(published=True)
+        tags = Tag.objects.get_for_object(self)
+        
+        if tags:
+            qs = TaggedItem.objects.get_by_model(qs, tags)
+        
+        if self.limit > 0:
+            qs = qs[:self.limit]
+        
+        return qs
+    
+    @property
+    def render_template(self):
+        return select_template([
+            'cms/plugins/newsy/%s-latest.html' % (self.placeholder.slot.lower(),),
+            'cms/plugins/newsy/latest.html'])
+    
+    def copy_relations(self, oldinstance):
+        self.tags = oldinstance.tags
