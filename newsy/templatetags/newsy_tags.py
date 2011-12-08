@@ -1,4 +1,5 @@
 import operator
+from logging import getLogger
 
 from django import template
 
@@ -8,6 +9,7 @@ from newsy.placeholders import render_newsy_placeholder
 
 
 
+log = getLogger('newsy.templatetags.newsy_tags')
 register = template.Library()
 
 def _get_placeholder(page, name):
@@ -25,6 +27,7 @@ class NewsyPlaceholder(Placeholder):
     name='newsy_placeholder'
     
     def render_tag(self, context, name, extra_bits, nodelist=None):
+        log.debug('NewsyPlaceholder.render_tag(name=%s)' % (unicode(name),))
         width = None
         inherit = False
         for bit in extra_bits:
@@ -63,6 +66,7 @@ class NewsyPluginsMedia(PluginsMedia):
     name = 'newsy_plugins_media'
     
     def render_tag(self, context, page_lookup):
+        log.debug('NewsyPluginsMedia.render_tag')
         if not 'request' in context:
             return ''
         request = context['request']

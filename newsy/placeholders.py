@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from logging import getLogger
+
 from cms.exceptions import DuplicatePlaceholderWarning
 from cms.models import Page
 from cms.plugin_rendering import render_plugins
@@ -18,7 +20,11 @@ from newsy.models import NewsItem
 
 
 
+log = getLogger('newsy.placeholders')
+
 def get_newsitem_from_placeholder_if_exists(placeholder):
+    log.debug('get_newsitem_from_placeholder_if_exists(placeholder=%s)' % 
+              (unicode(placeholder),))
     try:
         return NewsItem.objects.get(placeholders=placeholder)
     except (NewsItem.DoesNotExist, NewsItem.MultipleObjectsReturned):
@@ -29,6 +35,8 @@ def render_newsy_placeholder(placeholder, context, name_fallback="Placeholder"):
     Renders plugins for a placeholder on the given page using shallow copies of the 
     given context, and returns a string containing the rendered output.
     """
+    log.debug('render_newsy_placeholder(placeholder=%s)' % 
+              (unicode(placeholder),))
     request = context.get('request', None)
     context.push()
     plugins = list(get_plugins(request, placeholder))

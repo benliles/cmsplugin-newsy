@@ -1,4 +1,5 @@
 from datetime import date
+from logging import getLogger
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -15,6 +16,8 @@ from tagging.fields import TagField
 from tagging.models import TaggedItem, Tag
 
 
+
+log = getLogger('newsy.models')
 
 class NewsItemThumbnail(ImageModel):
     news_item = models.OneToOneField('NewsItem',related_name='thumbnail',
@@ -130,6 +133,7 @@ class NewsItem(models.Model):
         Rescan and if necessary create placeholders in the current template.
         """
         # inline import to prevent circular imports
+        log.debug('NewsItem.rescan_placeholders(%s)' % (unicode(self),))
         from cms.utils.plugins import get_placeholders
         placeholders = get_placeholders(self.get_template())
         found = {}
@@ -214,6 +218,7 @@ class LatestNewsPlugin(CMSPlugin):
         return 'Latest news'
     
     def items(self):
+        log.debug('%s.items()' % (repr(self),))
         qs = NewsItem.site_objects.filter(published=True)
         tags = Tag.objects.get_for_object(self)
         
@@ -227,9 +232,11 @@ class LatestNewsPlugin(CMSPlugin):
     
     @property
     def render_template(self):
+        log.debug('%s.render_template()' % (repr(self),))
         return select_template([
             'cms/plugins/newsy/%s-latest.html' % (self.placeholder.slot.lower(),),
             'cms/plugins/newsy/latest.html'])
     
     def copy_relations(self, oldinstance):
+        log.debug('%s.copy_relations(%s)' % (repr(self), repr(oldinstance),))
         self.tags = oldinstance.tags
