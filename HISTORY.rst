@@ -1,3 +1,8 @@
+0.5 (2012/06/??)
+----------------
+
+* Fixed the bug when moving plugins between placeholders
+
 0.4.1 (2011/12/08)
 ------------------
 

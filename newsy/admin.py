@@ -860,7 +860,8 @@ class NewsItemAdmin(ModelAdmin):
             success = False
             if 'plugin_id' in request.POST:
                 plugin = CMSPlugin.objects.get(pk=int(request.POST['plugin_id']))
-                page = get_page_from_plugin_or_404(plugin)
+                old_placeholder = plugin.placeholder
+                page = get_item_from_placeholder_if_exists(old_placeholder)
                 placeholder_slot = request.POST['placeholder']
                 placeholders = get_placeholders(page.get_template())
                 if not placeholder_slot in placeholders:
