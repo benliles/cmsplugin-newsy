@@ -5,6 +5,7 @@
 * Fixed page title when editing a news item
 * Site selection is now a multi-checkbox input
 * Fixed reversion integration
+* Added a redirect to handle a changed publication date with a unique slug
 
 0.4.1 (2011/12/08)
 ------------------

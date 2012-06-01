@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from django.contrib.auth.decorators import permission_required
-from django.http import Http404, HttpResponseServerError
+from django.http import Http404, HttpResponseServerError, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.views.generic.list import ListView
@@ -74,9 +74,15 @@ def item_view(request, year, month, day, slug):
                                     publication_date__month=month,
                                     publication_date__day=day,
                                     slug=slug)
-    except NewsItem.DoesNotExist, NewsItem.MultipleObjectsReturned:
+    except NewsItem.MultipleObjectsReturned:
         raise Http404()
-    
+    except NewsItem.DoesNotExist:
+        try:
+            page = NewsItem.objects.get(slug=slug)
+            return HttpResponseRedirect(page.get_absolute_url())
+        except NewsItem.DoesNotExist, NewItem.MultipleObjectsReturned:
+            raise Http404()
+
     context = RequestContext(request)
     context['lang'] = get_language_from_request(request)
     context['current_page'] = page
