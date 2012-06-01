@@ -3,6 +3,7 @@
 
 * Fixed the bug when moving plugins between placeholders
 * Fixed page title when editing a news item
+* Site selection is now a multi-checkbox input
 
 0.4.1 (2011/12/08)
 ------------------
