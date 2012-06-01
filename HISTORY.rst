@@ -2,6 +2,7 @@
 ----------------
 
 * Fixed the bug when moving plugins between placeholders
+* Fixed page title when editing a news item
 
 0.4.1 (2011/12/08)
 ------------------
