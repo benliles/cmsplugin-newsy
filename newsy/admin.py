@@ -271,16 +271,14 @@ class NewsItemAdmin(ModelAdmin):
                             continue
                         else:
                             revs.append(rev)
-                    for rev in revs:
-                        pobj = rev.object
-                        if pobj.__class__ == Placeholder:
-                            if pobj.slot == placeholder_name:
-                                placeholder = pobj
-                                break
+                    print unicode(revs)
                     for rev in revs:
                         pobj = rev.object
                         if pobj.__class__ == CMSPlugin:
-                            if pobj.placeholder_id == placeholder.id and not pobj.parent_id:
+                            print 'Looking at plugin id:%s' % (repr(pobj),)
+                            if pobj.placeholder.slot == placeholder_name and \
+                                not pobj.parent_id:
+                                placeholder = pobj.placeholder
                                 if pobj.get_plugin_class() == CMSPlugin:
                                     plugin_list.append(pobj)
                                 else:
@@ -292,6 +290,8 @@ class NewsItemAdmin(ModelAdmin):
                             bases[int(plugin.cmsplugin_ptr_id)].placeholder = placeholder
                             bases[int(plugin.cmsplugin_ptr_id)].set_base_attr(plugin)
                             plugin_list.append(plugin)
+                    print 'Found %d plugins for %s: %s' % (len(plugin_list),
+                            placeholder_name, unicode(plugin_list),)
                 else:
                     placeholder, created = obj.placeholders.get_or_create(slot=placeholder_name)
                     installed_plugins = plugin_pool.get_all_plugins(placeholder_name, obj)
@@ -304,7 +304,7 @@ class NewsItemAdmin(ModelAdmin):
                     'language': '',
                     'placeholder': placeholder
                 })
-                form.base_fields[placeholder.slot] = CharField(widget=widget, required=False)
+                form.base_fields[placeholder_name] = CharField(widget=widget, required=False)
         else:
             form.base_fields['template'].initial = settings.NEWSY_TEMPLATES[0][0]
         
@@ -353,6 +353,7 @@ class NewsItemAdmin(ModelAdmin):
         
         return super(NewsItemAdmin, self).change_view(request, object_id, extra_context)
 
+
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
         # add context variables
         filled_languages = []
@@ -364,6 +365,35 @@ class NewsItemAdmin(ModelAdmin):
         })
         return super(NewsItemAdmin, self).render_change_form(request, context, add, change, form_url, obj)
     
+    def update_language_tab_context(self, request, obj, context=None):
+        if not context:
+            context = {}
+        language = get_language_from_request(request, obj)
+        languages = self._get_site_languages(obj)
+        context.update({
+            'language': language,
+            'language_tabs': languages,
+            'show_language_tabs': False 
+        })
+        return context
+
+    def revision_view(self, request, object_id, version_id, extra_context=None):
+        if not self.has_change_permission(request, NewsItem.objects.get(pk=object_id)):
+            raise PermissionDenied
+        extra_context = self.update_language_tab_context(request, None, extra_context)
+        response = super(NewsItemAdmin, self).revision_view(request, object_id, version_id, extra_context)
+        return response
+
+    def history_view(self, request, object_id, extra_context=None):
+        if not self.has_change_permission(request, NewsItem.objects.get(pk=object_id)):
+            raise PermissionDenied
+        extra_context = self.update_language_tab_context(request, None, extra_context)
+        return super(NewsItemAdmin, self).history_view(request, object_id, extra_context)
+
+    def render_revision_form(self, request, obj, version, context, revert=False, recover=False):
+        obj.version = version
+
+        return super(NewsItemAdmin, self).render_revision_form(request, obj, version, context, revert, recover)
     
     @transaction.commit_on_success
     def move_page(self, request, page_id, extra_context=None):
