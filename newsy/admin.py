@@ -271,11 +271,9 @@ class NewsItemAdmin(ModelAdmin):
                             continue
                         else:
                             revs.append(rev)
-                    print unicode(revs)
                     for rev in revs:
                         pobj = rev.object
                         if pobj.__class__ == CMSPlugin:
-                            print 'Looking at plugin id:%s' % (repr(pobj),)
                             if pobj.placeholder.slot == placeholder_name and \
                                 not pobj.parent_id:
                                 placeholder = pobj.placeholder
@@ -290,8 +288,6 @@ class NewsItemAdmin(ModelAdmin):
                             bases[int(plugin.cmsplugin_ptr_id)].placeholder = placeholder
                             bases[int(plugin.cmsplugin_ptr_id)].set_base_attr(plugin)
                             plugin_list.append(plugin)
-                    print 'Found %d plugins for %s: %s' % (len(plugin_list),
-                            placeholder_name, unicode(plugin_list),)
                 else:
                     placeholder, created = obj.placeholders.get_or_create(slot=placeholder_name)
                     installed_plugins = plugin_pool.get_all_plugins(placeholder_name, obj)

@@ -1,4 +1,9 @@
-0.5 (2012/06/??)
+0.5.1 (2012/06/04)
+------------------
+
+* Added a null log handler
+
+0.5 (2012/06/01)
 ----------------
 
 * Fixed the bug when moving plugins between placeholders
