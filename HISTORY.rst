@@ -2,15 +2,17 @@
 ------------------
 
 * Added a null log handler
+* Switch Tag Field to a Text based field to allow for more tags per item
 
 0.5 (2012/06/01)
 ----------------
 
-* Fixed the bug when moving plugins between placeholders
-* Fixed page title when editing a news item
-* Site selection is now a multi-checkbox input
-* Fixed reversion integration
+* Fixed the bug when moving plugins between placeholders (Github issue #15)
+* Fixed page title when editing a news item (Github issue #17)
+* Site selection is now a multi-checkbox input (Github issue #18)
+* Fixed reversion integration (Github issue #19)
 * Added a redirect to handle a changed publication date with a unique slug
+  (Github issue #16)
 
 0.4.1 (2011/12/08)
 ------------------
