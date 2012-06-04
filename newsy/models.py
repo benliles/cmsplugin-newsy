@@ -12,12 +12,26 @@ from cms.models import Placeholder, Page, CMSPlugin
 
 from photologue.models import ImageModel
 
-from tagging.fields import TagField
+from tagging.fields import TagField as BaseTagField
 from tagging.models import TaggedItem, Tag
 
 
 
 log = getLogger('newsy.models')
+
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^newsy\.models\.TagField"])
+except ImportError:
+    pass
+
+class TagField(BaseTagField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('max_length', 4096)
+        super(TagField, self).__init__(*args, **kwargs)
+
+    def get_internal_type(self):
+        return 'TextField'
 
 class NewsItemThumbnail(ImageModel):
     news_item = models.OneToOneField('NewsItem',related_name='thumbnail',
