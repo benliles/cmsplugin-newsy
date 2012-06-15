@@ -8,7 +8,7 @@ from django.views.generic.list import ListView
 
 from cms.utils import get_language_from_request
 
-from tagging.models import TaggedItem
+from tagging.models import TaggedItem, Tag
 
 from newsy.models import NewsItem
 
@@ -122,3 +122,13 @@ def archive_view(request, year, month=None, day=None, **kwargs):
         kwargs['filters']['publication_date__month'] = month
     
     return item_list(request, **kwargs)
+
+class TagsView(ListView):
+    template_name = 'newsy/tag_list.html'
+
+    def get_queryset(self, *args, **kwargs):
+        return Tag.objects.usage_for_queryset(
+                NewsItem.site_objects.filter(published=True))
+
+tags_view = TagsView.as_view()
+
