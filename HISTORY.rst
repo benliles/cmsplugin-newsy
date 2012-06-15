@@ -1,3 +1,12 @@
+0.6 (2012/06/15)
+----------------
+
+* Added a tags view
+* Added support for tags with dashes
+* Added a CMS Attach Menu for menu/breadcrumb integration
+* Added year/month/day values to context when viewing news items with those
+  filters applied
+
 0.5.1 (2012/06/04)
 ------------------
 

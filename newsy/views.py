@@ -128,7 +128,8 @@ class TagsView(ListView):
 
     def get_queryset(self, *args, **kwargs):
         return Tag.objects.usage_for_queryset(
-                NewsItem.site_objects.filter(published=True))
+                NewsItem.site_objects.filter(published=True),
+                counts=True)
 
 tags_view = TagsView.as_view()
 
