@@ -62,6 +62,10 @@ class NewsListView(ListView):
         tags = self.get_tags()
         if tags:
             context['news_tags'] = tags
+        context['news_year'] = getattr(self, 'kwargs', {}).get('year', None)
+        context['news_month'] = getattr(self, 'kwargs', {}).get('month', None)
+        context['news_day'] = getattr(self, 'kwargs', {}).get('day', None)
+
         return context
 
 item_list = NewsListView.as_view(paginate_by=15)
