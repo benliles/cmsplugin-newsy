@@ -84,7 +84,7 @@ def item_view(request, year, month, day, slug):
         try:
             page = NewsItem.objects.get(slug=slug)
             return HttpResponseRedirect(page.get_absolute_url())
-        except NewsItem.DoesNotExist, NewItem.MultipleObjectsReturned:
+        except NewsItem.DoesNotExist, NewsItem.MultipleObjectsReturned:
             raise Http404()
 
     context = RequestContext(request)
